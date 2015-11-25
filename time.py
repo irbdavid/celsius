@@ -4,7 +4,6 @@ The internal time type is SPICEET, i.e. seconds since J2000. All conversions are
 
 """
 
-
 import numpy as np
 import matplotlib.pylab as plt
 import matplotlib as mpl

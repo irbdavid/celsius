@@ -1,6 +1,5 @@
 =============================================================
-Python library for handling time formats, spice kernels, and other space-related
-things.
+Python library for handling time formats, spice kernels, and other space-related things.
 =============================================================
 
 Introduction
@@ -13,18 +12,18 @@ Routines are provided for managing, manipulating, and plotting versus time.  The
 Requirements
 ------------
 
-Tested against the anaconda python distrubition (v 3.5)
-SpiceyPy library required for NAIF spice interface
-SpacePy  library required for CDF access
+1. Tested against the anaconda python distrubition (v 3.5)
+2. SpiceyPy library required for NAIF spice interface
+3. SpacePy  library required for CDF access
 
 Installation
 ------------
 
-0) Satisfy requirements above
-1) Add this module into your python path.
-3) Set the local directory that will be used for storing data:
+1. Satisfy requirements above
+2. Add this module into your python path.
+3. Set the local directory that will be used for storing data:
     export SC_DATA_DIR="~/data"
-4) Run tests?
+4. Run tests?
 
 Examples of use
 ---------------
