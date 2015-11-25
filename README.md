@@ -27,3 +27,20 @@ Installation
 
 Examples of use
 ---------------
+```python
+import celsius
+import matplotlib.pyplot as plt
+
+t0 = celsius.spiceet("2015-01-01T00:00")
+t1 = celsius.now()
+
+plt.plot((t0, t1), (1., 1.))
+celsius.setup_time_axis()
+
+print(celsius.utcstr(t1))
+print(celsius.utcstr(t1, 'ISOC'))
+
+t_obj = celsius.CelsiusTime(t0)
+print(t_obj.year, t_obj.doy)
+
+```
