@@ -12,7 +12,7 @@ Routines are provided for managing, manipulating, and plotting versus time.  The
 Requirements
 ------------
 
-1. Tested against the anaconda python distrubition (v 3.5)
+1. Tested against the anaconda python distribution (v 3.5)
 2. SpiceyPy library required for NAIF spice interface
 3. SpacePy  library required for CDF access
 

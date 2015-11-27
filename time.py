@@ -238,9 +238,10 @@ def datetime_to_spiceet(t):
 def spiceet_to_datetime(time):
     """Time conversion function. N.b.: datetime is not leapseconds-aware"""
     # spiceet to string to datetime
-    x = spiceet_to_str(time, 'ISOC')
+    x = spiceet_to_utcstr(time, 'ISOC')
     return datetime.datetime(int(x[0:4]), int(x[5:7]), int(x[8:10]),
             int(x[11:13]), int(x[14:16]), int(x[17:19]), int(float(x[19:])*1e6))
+    
 def matlabtime_to_spiceet(time):
     """Time conversion function"""
     return (time - matlabtime_epoch) * 86400.0 + spiceet_epoch
