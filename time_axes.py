@@ -39,7 +39,7 @@ Args:
 class SpiceetLocator(mpl.ticker.Locator):
     """Locator class that determines sensible time tick locations using SPICE."""
     def __init__(self, nmax=7, nmin=3, prune=None, verbose=False,
-                        calendar=False, spacing=None):
+                        calendar=False, spacing=None, minor=False):
         """Create a SpiceetLocator instance.
 
 Args:
@@ -49,7 +49,12 @@ Args:
     verbose (bool): print some info
     calendar (bool): Use numbered months where appropriate (ISOC), instead of
         DOY (ISOD).
-    spacing (str or tupple): Force the use of a specific interval, irrespective of the axis limits.  If string, intpreted as one of the pre-determined 'allowed intervals', e.g. '10_days'.  Otherwise, :spacing: should be a tuple of the same format used for 'allowed_intervals', ('name including base', spacing_seconds, multiples_of_base), e.g. ('3days', 86400.*3., 3).
+    spacing (str or tupple): Force the use of a specific interval,
+        irrespective of the axis limits.  If string, intpreted as one of the pre-determined 'allowed intervals', e.g. '10_days'.  Otherwise,
+        :spacing: should be a tuple of the same format used for
+        'allowed_intervals', ('name including base', spacing_seconds,
+        multiples_of_base), e.g. ('3days', 86400.*3., 3).
+    minor (bool): Set options for minor tick locating (redefines nmin and nmax)
     """
         self._nmax = nmax
         self._nmin = nmin
@@ -57,12 +62,19 @@ Args:
         self._spacing = spacing
         self.calendar = calendar
 
+        self._minor = False
+        if minor:
+            self._minor = True
+            self._nmin = self._nmax
+            self._nmax = self._nmin**2
+
         self.verbose = verbose
 
         self.name = ''
         self.sep  = None
         self.multiple  = None
 
+        # name, spacing_seconds, integer
         self.allowed_intervals = [
             ('1000_years', 1000*365.25 * 86400., 1000),
             ('100_years', 100*365.25 * 86400., 100),
@@ -101,10 +113,11 @@ Args:
             ('0.01_second', 0.01, 0.01),
         ]
 
+        # remove 'month'-based intervals for non-calendar use
         if not self.calendar:
             self.allowed_intervals = [p for p in self.allowed_intervals
                             if not 'month' in p[0]]
-            self.allowed_intervals.insert(0, ('20_days', 86400.*20., 20))
+            # self.allowed_intervals.insert(0, ('20_days', 86400.*20., 20))
             self.allowed_intervals.insert(0, ('50_days', 86400.*50., 50))
             self.allowed_intervals.insert(0, ('100_days', 86400.*100., 100))
 
@@ -308,6 +321,11 @@ Args:
             locs = locs[:-1]
         elif prune=='both':
             locs = locs[1:-1]
+
+        if self.verbose:
+            print(self, '__call__: ', utcstr(vmin),
+                    utcstr(vmax), ': ', self.name, len(locs))
+
         return locs #, self.raise_if_exceeds(locs)
 
 class SpiceetFormatter(mpl.ticker.Formatter):
