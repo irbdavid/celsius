@@ -66,13 +66,14 @@ Comparison of file versions not yet implemented - would be much more complicated
         self.server_path = self.config['server_path']
         self.name = self.config['name']
 
-        if self.local_directory == '$HERE':
-            self.local_directory = self.config_file.rsplit('/',1)[0]
-            if self.verbose:
-                print('Updating local directory to ' + self.local_directory)
-        elif '$SC_DATA_DIR' in self.local_directory:
-            self.local_directory = self.local_directory.replace('$SC_DATA_DIR',
-                        os.getenv('SC_DATA_DIR', os.path.expanduser('~/data/')))
+        if '$' in self.local_directory:
+
+            if self.local_directory == '$HERE':
+                self.local_directory = self.config_file.rsplit('/',1)[0]
+            else:
+                self.local_directory = os.path.expandvars(self.local_directory)
+                self.local_directory = os.path.expanduser(self.local_directory)
+
             if self.verbose:
                 print('Updating local directory to ' + self.local_directory)
 
