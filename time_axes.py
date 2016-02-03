@@ -293,7 +293,7 @@ Args:
 
         else:
             # Make the best of a bad situation
-            ticks = np.linspace(start, finish, (max_ticks + min_ticks)/2)
+            ticks = np.linspace(start, finish, (self._nmax + self._nmin)/2)
 
         ticks = [t for t in ticks if (t > start) and (t < finish)]
         # if self.verbose:
