@@ -33,3 +33,7 @@ def td_to_modb(td, error=None):
 def modb_to_td(b):
     """Convert magnetic field intensity in T to cyclotron period in s"""
     return 2.0 * np.pi / (1.758820150E11 * b)
+
+def electron_gyroradius(b, e):
+    "e in eV, b in nt, result in km"
+    return 1.1E2 * np.sqrt(e/1e3) / b

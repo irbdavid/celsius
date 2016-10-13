@@ -196,8 +196,8 @@ def circular_mean(x, degrees=False, std=False, r=False):
     conv = 1.
     if degrees: conv = np.pi/180.
 
-    cm = np.mean(np.cos(x * conv) * w)
-    sm = np.mean(np.sin(x * conv) * w)
+    cm = np.mean(np.cos(x * conv))
+    sm = np.mean(np.sin(x * conv))
 
     r_v = np.sqrt(cm * cm + sm*sm)
     ma = np.arctan2(sm,cm) / conv
