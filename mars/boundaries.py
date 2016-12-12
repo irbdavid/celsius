@@ -15,6 +15,7 @@ def hold_xylim(func):
 @hold_xylim
 def plot_mpb_model_sza(fmt='k-', model="TROTIGNON06", shadow=True,
             return_values=False, **kwargs):
+
     if model == "VIGNES00":
         t = np.arange(0., np.pi, 0.01)
         x = 0.78 + 0.96 * np.cos(t) / (1 + 0.9 * np.cos(t))
@@ -46,7 +47,8 @@ def plot_mpb_model_sza(fmt='k-', model="TROTIGNON06", shadow=True,
     sza = np.arctan2(y, x) / np.pi * 180.
 
     if shadow:
-        y = np.arange(0., 2500., 10.)
+        # y = np.arange(0., 6000., 10.)
+        y = 10.**(np.linspace(0.,4.,256))
         x = 90. + 180. /np.pi * np.arccos(3376. / (3376. + y))
 
         if return_values:
