@@ -3,7 +3,7 @@
 Uses FTP to grab the required leapseconds kernel when imported.
 """
 
-from .time import *
+from .celsiustime import *
 from .time_axes import *
 from .data import *
 from .physics import *
