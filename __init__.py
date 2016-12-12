@@ -29,7 +29,12 @@ PATH = '/pub/naif/generic_kernels/lsk'
 LSK_FILENAME = getenv("SC_DATA_DIR", default=expanduser('~/data/')) + \
         'latest.tls'
 
-age = time.time() - os.stat(LSK_FILENAME)[stat.ST_MTIME]
+try:
+    age = time.time() - os.stat(LSK_FILENAME)[stat.ST_MTIME]
+except IOError as e:
+    print('No sign of a local leapseconds kernel file.')
+    age = 1e99
+
 if SERVER and (age > 86400*100):
 
     print('Obtaining newest leap-seconds kernel from ' + SERVER + '...')
