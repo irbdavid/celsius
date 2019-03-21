@@ -12,6 +12,8 @@ from matplotlib.collections import LineCollection
 
 from skimage.morphology import label
 
+from celsius import interp_safe
+
 __author__ = "David Andrews"
 __copyright__ = "Copyright 2015, David Andrews"
 __license__ = "MIT"
@@ -100,7 +102,7 @@ Returns:
         y0 = bbox.y1 + offset
         y1 = y0 + height
     else:
-        y1 = bbox.y1 - offset
+        y1 = bbox.y0 - offset
         y0 = y1 - height
 
     new_ax_coords = [x0, y0, actual_width, height]
@@ -376,6 +378,37 @@ Example:
     plt.sca(ax)
     return new_ax
 
+def plot_planet(radius=1., orientation='dawn', ax=None, origin=(0.,0.), scale=0.96,
+                    edgecolor='black', facecolor='white', resolution=256, zorder=None, **kwargs):
+    """`orientation' specifies view direction, one of 'noon', 'midnight',
+anything else being used as the terminator.  `scale' is used to adjust the 'white' polygon
+size in relation to the radius for aesthetics """
+    if zorder is None:
+        zorder = -9999
+
+    if ax is None:
+        ax = plt.gca()
+
+    o = orientation.lower()
+    if o == 'noon':
+        ax.add_patch(plt.Circle(origin, radius, fill=True, zorder=zorder,
+                        facecolor=facecolor, edgecolor=edgecolor, **kwargs))
+        return
+    elif o == 'midnight':
+        ax.add_patch(plt.Circle(origin, radius, fill=True, color=edgecolor, zorder=zorder, **kwargs))
+        return
+
+    theta = np.linspace(0., np.pi, resolution) - np.pi/2.
+    xy = np.empty((resolution, 2))
+    xy[:,0] = scale * radius * np.cos(theta)
+    xy[:,1] = scale * radius * np.sin(theta)
+    if o == 'dusk':
+        xy[:,0] = -1. * xy[:,0]
+
+    semi = plt.Polygon(xy, closed=True, color=facecolor, fill=True)
+    ax.add_patch(plt.Circle(origin, radius, fill=True, color=edgecolor, zorder=zorder+1, **kwargs))
+    ax.add_patch(semi)
+
 class DJAPage(object):
     """
 Provides a set of stacked panels, with callbacks to link the xlimits.
@@ -459,6 +492,44 @@ Additional items such as orbit bars can be registered after creation.
             self.cids.append(cid)
             self.axs.append(ax)
 
+def terminator(sslat, sslon, N=1024, repeat=True):
+    """Compute a terminator line for a given sub-solar latitude and longitude (radians) over N points.
+    Returns latitude and longitude in radians.
+    """
+
+    # Parameter
+    t = np.arange(-np.pi, np.pi - 0.0001, 2. * np.pi/N)
+
+    # Circle about the pole
+    x = np.cos(t)
+    y = np.sin(t)
+    z = np.zeros_like(t)
+
+    # Rotate about y-axis by angle
+    rot = np.pi/2. - sslat
+    xx = x * np.cos(rot) + z * np.sin(rot)
+    yy = y
+    zz = x * -np.sin(rot) + z * np.cos(rot)
+
+    # Convert to polar
+    r = np.sqrt(xx**2 + yy**2 + zz**2)
+    theta = np.arccos(zz / r)
+    phi = np.arctan2(yy,xx)
+
+    # Spin to correct longitude and cleanup
+    phi = (phi + sslon) % (2. * np.pi)
+    phi = (phi + (2 * np.pi)) % (2. * np.pi)
+    phi = np.unwrap(phi)
+
+    inx = np.argsort(phi)
+    phi = phi[inx]
+    lat = np.pi/2. - theta
+    lat = lat[inx]
+
+    if repeat:
+        return np.hstack((lat, lat, lat)), np.hstack((phi - 2.*np.pi, phi, phi + 2.*np.pi))
+
+    return lat, phi
 
 def test_axes_stuff():
     fig = DJAPage(ratios=[2.,1., 0.63])
