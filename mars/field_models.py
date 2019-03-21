@@ -412,6 +412,8 @@ def plot_lat_lon_field(name=None, value='|B|', zorder=0, cmap=None,
 
     if name is None:
         name = mex.data_directory + 'saved_field_models/Cain_400km1deg.pck'
+        if not os.path.exists(name):
+            name = mex.data_directory + 'saved_field_models/CainMarsFieldModel_1deg_400km.pck'
 
     if isinstance(name, str):
         print('Loading field model from %s' % name)
@@ -579,7 +581,7 @@ if __name__ == '__main__':
     if True:
         model = CainMarsFieldModel()
         name  = 'CainMarsFieldModel_1deg_%dkm.pck'
-        for alt in (0., 100., 150., 400., 1000.):
+        for alt in (400., 0., 100., 150., 1000.):
             if alt < 10.: alt = 10.
             fname = name % alt
             fname = os.path.expanduser(
