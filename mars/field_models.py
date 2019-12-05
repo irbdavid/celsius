@@ -304,6 +304,42 @@ class LillisMarsFieldModel(SphericalHarmonicModel):
         print("Read %d lines of coefficients from %s" % (c,
                             coefficients_file))
 
+class MorschhauserMarsFieldModel(SphericalHarmonicModel):
+    """Morschhauser 2014 Mars field model"""
+    def __init__(self, coefficients_file=None, nmax=110):
+        super(MorschhauserMarsFieldModel, self).__init__("MARS", "Morschhauser (2014)")
+
+        # raise RuntimeError()
+        if coefficients_file is None:
+            coefficients_file = mex.data_directory + "morschhauser_coefs.txt"
+
+        self.coefficients_file = coefficients_file
+        self.nmax = nmax
+
+        self.g = np.zeros((nmax+1, nmax+1))
+        self.h = np.zeros_like(self.g)
+
+        self.rp = 3393.5
+        c = 0
+        with open(coefficients_file) as f:
+            for i in range(3): f.readline()
+
+            for l in f:
+                c += 1
+                n, m, gnm = l.split()
+                n = int(n)
+                m = int(m)
+
+                if n > nmax:
+                    break
+                if m >= 0:
+                    self.g[n,m] = float(gnm)
+                if m < 0:
+                    self.h[n,-m] = float(gnm)
+
+        print("Read %d lines of coefficients from %s" % (c,
+                            coefficients_file))
+
 
 class CainMarsFieldModelAtMEX(object):
     """docstring for CainMarsFieldModelAtMEX"""
