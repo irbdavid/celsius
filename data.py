@@ -287,3 +287,28 @@ def bin_2d(x, y, z=None, xbins=None, ybins=None, func=None, background=None):
 def center_phase_data(x, center=0., interval=360.):
     t = interval/2. - center
     return (((x + t) % interval) - t)
+
+
+def polar_to_cartesian(pos, vec):
+    """Coordinate conversion, input position in (radial dist, latitude, longitude ) [deg]."""
+    clat = np.pi/2 - pos[1] * np.pi/180.
+    lon = pos[2] * np.pi/180.
+
+    out = np.array((
+      np.sin(clat) * np.cos(lon) * vec[0] + np.cos(clat) * np.cos(lon) * vec[1] - np.sin(lon) * vec[2],
+      np.sin(clat) * np.sin(lon) * vec[0] + np.cos(clat) * np.sin(lon) * vec[1] + np.cos(lon) * vec[2],
+      np.cos(clat) * vec[0] - np.sin(clat) * vec[1]
+    ))
+
+    return out
+
+def cartesian_to_polar(pos, vec):
+    """Coordinate conversion, input position in (radial dist, latitude, longitude ) [deg]."""
+    clat = np.pi/2 - pos[1] * np.pi/180.
+    lon = pos[2] * np.pi/180.
+    out = np.array((
+      np.sin(clat) * np.cos(lon) * vec[0] + np.sin(clat) * np.sin(lon) * vec[1] + np.cos(clat) * vec[2],
+      np.cos(clat) * np.cos(lon) * vec[0] + np.cos(clat) * np.sin(lon) * vec[1] - np.sin(clat) * vec[2],
+      -np.sin(lon) * vec[0] + np.cos(lon) * vec[1]
+    ))
+    return out
