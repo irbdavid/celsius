@@ -15,8 +15,6 @@ import os
 import sys
 import functools
 
-import time as py_time
-
 import pickle
 import spiceypy
 import glob
