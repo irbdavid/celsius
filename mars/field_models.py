@@ -47,6 +47,27 @@ def schmidt_polynomials(x, nmax):
                 twoago = arr[i-1,m]
     return arr
 
+def convert_biau_to_bmso(iau_position_rll, b_iau, times, check_kernels=None):
+    """iau_position is in iau_mars frame, (r, lat, lon) in deg, b_iau in (r,theta,phi), times in spice et.  Result is in the MSO frame, cartesian components.
+
+    Will by default assume that the correct spice kernels are loaded (since you have presumably just calculated iau_position_rll).  Otherwise, set check_kernels=True, which defaults to using MEX routines, or the supplied package, e.g. import maven; convert_biau_to_bmso(...,check_kernels=maven).
+    """
+    b_out = np.empty_like(b_iau) + np.nan
+
+    b_iau_cart = polar_to_cartesian(iau_position_rll, b_iau)
+
+    if check_kernels is not None:
+        if check_kernels is True:
+            mex.load_kernels(times)
+        else:
+            check_kernels.load_kernels(times)
+
+    for i in range(times.shape[0]):
+        m = spiceypy.pxform("IAU_MARS", "MAVEN_MSO", times[i])
+        x = spiceypy.mxv(m,b_iau_cart[:,i]*1.)
+        b_out[:,i] = x
+
+    return b_out
 
 class FieldModel(object):
     """docstring for MarsFieldModel"""
@@ -92,6 +113,7 @@ class SphericalHarmonicModel(FieldModel):
     def _eval(self, p, nmax):
         """*p* is position in [r, lat, lon], where r is in km, and lat, lon are in deg"""
         # This is the bit that needs to be written in C
+        # This routine is shamelessly stolen from Dave Brain, and transposed to python.  Thanks Dave!, Cheers, /OtherDave.
         a_over_r = self.rp / p[0]
         l        = np.deg2rad(p[2])
         sct      = np.deg2rad(90. - p[1])
@@ -245,15 +267,15 @@ class ArkaniMarsFieldModel(SphericalHarmonicModel):
         self.coefficients_file = coefficients_file
         self.nmax = nmax
 
-        ass = readsav(self.coefficients_file, verbose=False)
+        tmp = readsav(self.coefficients_file, verbose=False)
 
-        if (self.nmax + 2) > ass.ga.shape[0]:
-            raise ValueError("nmax = %d greater than supplied g,h shape (%d,%d)" % (nmax, ass.ga.shape[0], ass.ga.shape[0]))
+        if (self.nmax + 2) > tmp.ga.shape[0]:
+            raise ValueError("nmax = %d greater than supplied g,h shape (%d,%d)" % (nmax, tmp.ga.shape[0], tmp.ga.shape[0]))
 
         # Transpose to change the ordering
-        self.g = ass.ga[0:self.nmax+2,0:self.nmax+2].T.copy()
-        self.h = ass.ha[0:self.nmax+2,0:self.nmax+2].T.copy()
-        self.rp = ass.rplaneta
+        self.g = tmp.ga[0:self.nmax+2,0:self.nmax+2].T.copy()
+        self.h = tmp.ha[0:self.nmax+2,0:self.nmax+2].T.copy()
+        self.rp = tmp.rplaneta
 
 class CainMarsFieldModel(SphericalHarmonicModel):
     """docstring for CainMarsFieldModel"""
@@ -266,14 +288,14 @@ class CainMarsFieldModel(SphericalHarmonicModel):
         self.coefficients_file = coefficients_file
         self.nmax = nmax
 
-        ass = readsav(self.coefficients_file, verbose=False)
+        tmp = readsav(self.coefficients_file, verbose=False)
 
         # Transpose to change the ordering
-        self.g = ass.gc[0:self.nmax+2,0:self.nmax+2].T.copy()
-        self.h = ass.hc[0:self.nmax+2,0:self.nmax+2].T.copy()
-        self.rp = ass.rplanetc * 1.
+        self.g = tmp.gc[0:self.nmax+2,0:self.nmax+2].T.copy()
+        self.h = tmp.hc[0:self.nmax+2,0:self.nmax+2].T.copy()
+        self.rp = tmp.rplanetc * 1.
 
-        # print self.rp is ass.rplanetc
+        # print self.rp is tmp.rplanetc
 
 class LillisMarsFieldModel(SphericalHarmonicModel):
     """Lillis 2010 Mars field model (c.f. Purucker 2008)"""
@@ -311,7 +333,7 @@ class MorschhauserMarsFieldModel(SphericalHarmonicModel):
 
         # raise RuntimeError()
         if coefficients_file is None:
-            coefficients_file = mex.data_directory + "morschhauser_coefs.txt"
+            coefficients_file = mex.data_directory + "morschhauser_coeffs.txt"
 
         self.coefficients_file = coefficients_file
         self.nmax = nmax
